@@ -6,8 +6,8 @@ function Field(props) {
   return (
     <section className="field">
       {props.field.map((row, index) => {
-        const uniqueId = `col${index}`;
-        return <Row key={uniqueId} row={row} changeCell={props.changeCell} colId={uniqueId} />
+        const uniqueId = `row${index}`;
+        return <Row key={uniqueId} row={row} changeCell={props.changeCell} rowId={uniqueId} />
       })}
     </section>
   );

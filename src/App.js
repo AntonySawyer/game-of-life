@@ -13,10 +13,12 @@ class App extends Component {
   }
 
   setNewField() {
-    const width = +document.getElementById('fieldWidth').value;
-    const height = +document.getElementById('fieldHeigth').value;
-    const blankField = new Array(width).fill(new Array(height).fill(0));
-    this.setState({field: blankField});
+      const width = +document.getElementById('fieldWidth').value;
+      const height = +document.getElementById('fieldHeigth').value;
+      const blankField = new Array(width).fill(new Array(height).fill(0));
+      this.setState({
+        field: blankField
+      });
   }
 
   playControl() {
@@ -28,7 +30,6 @@ class App extends Component {
   }
 
   startNewGame() {
-    this.setNewField();
     this.setState({
       isStarted: true
     })
@@ -45,9 +46,14 @@ class App extends Component {
   }
 
   changeCell(cellId) {
-    const cell = document.getElementById(cellId);
-    const currentCellState = cell.innerText;
-    cell.innerText = +currentCellState === 0 ? 1 : 0;
+    const idArr = cellId.split('_');
+    const rowIndex = +idArr[0].substring(3);
+    const colIndex = +idArr[1].substring(3);
+     this.setState((prevState, props) => {
+      const targetRow = prevState.field[rowIndex].slice();
+      targetRow[colIndex] = targetRow[colIndex] === 0 ? 1 : 0;
+      prevState.field[rowIndex] = targetRow;
+      return prevState;})
   }
 
   render() {
@@ -56,7 +62,8 @@ class App extends Component {
         <Navbar isStarted={this.state.isStarted}
                 setNewField={this.setNewField.bind(this)} 
                 playControl={this.playControl.bind(this)}
-                stopGame={this.stopGame.bind(this)} />
+                stopGame={this.stopGame.bind(this)}
+                clearAll={this.clearAll.bind(this)} />
         <Field field={this.state.field} 
                changeCell={this.changeCell.bind(this)} />
       </div>

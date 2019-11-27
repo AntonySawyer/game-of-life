@@ -6,7 +6,7 @@ function Row(props) {
   return (
     <div className="row" id={props.colId}>
       {props.row.map((val, index) => {
-        const uniqueId = `${props.colId}row${index}`;
+        const uniqueId = `${props.rowId}_col${index}`;
         return <Cell key={uniqueId} 
                     val={val}
                     changeCell={props.changeCell}
