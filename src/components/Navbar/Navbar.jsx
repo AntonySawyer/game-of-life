@@ -12,10 +12,9 @@ function Navbar(props) {
       <input type="button" value="Next generation" onClick={props.nextStep} />
       <input type="button" value="save" />
       <input type="button" value="load" />
-      <input type="button" value="-" />
-      <input type="text" defaultValue="interval" />
-      <input type="button" value="+" />
-      <span>12368 generation</span>
+      <input type="number" id="interval" defaultValue="500" step="50" min="50" 
+              onChange={props.changeSpeed} />
+      <span>{`${props.generationNum} generations`}</span>
     </header>
   );
 }

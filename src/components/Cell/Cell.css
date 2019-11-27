@@ -1,10 +1,11 @@
 .row > div {
   width: 20px;
   height: 20px;
+  border: 1px solid #221a1a;
 }
 
 .empty {
-  background-color: #ffc5c5;
+  background-color: #d3620954;
 }
 
 .filled {
