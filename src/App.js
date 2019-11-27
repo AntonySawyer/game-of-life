@@ -3,6 +3,8 @@ import './App.css';
 import Navbar from './components/Navbar';
 import Field from './components/Field';
 import checkNeibors from './utils/checkNeibors';
+import LoadPage from './components/LoadPage';
+import SavePage from './components/SavePage';
 
 class App extends Component {
   constructor(props) {
@@ -12,7 +14,10 @@ class App extends Component {
       field: new Array(10).fill(new Array(10).fill(0)),
       game: '',
       interval: 500,
-      generationNum: 0
+      generationNum: 0,
+      loadPage: false,
+      savePage: false,
+      saves: ''
     };
     this.nextStep = this.nextStep.bind(this);
   }
@@ -27,10 +32,14 @@ class App extends Component {
   }
 
   playControl() {
-    if (this.state.isStarted) {
-      this.stopGame();
+    if (!this.state.loadPage && !this.state.savePage) {
+      if (this.state.isStarted) {
+        this.stopGame();
+      } else {
+        this.startNewGame();
+      }
     } else {
-      this.startNewGame();
+      this.setState({loadPage: false, savePage: false});
     }
   }
 
@@ -80,6 +89,54 @@ class App extends Component {
     }
   }
 
+  showLoadPage() {
+    fetch('/load', {
+      method: 'post',
+      headers: {'Content-Type':'application/json'},
+      body: {}
+    }).then(response => response.json())
+      .then(result => {
+        this.setState({
+          loadPage: true,
+          savePage: false,
+          saves: result
+        })
+      })
+  }
+
+  showSavePage() {
+    this.setState({savePage: true, loadPage: false});
+  }
+
+  saveGame() {
+    const name = document.getElementById('saveName').value;
+    const fieldSerial = this.serialField(this.state.field);
+    fetch('/save', {
+      method: 'post',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: `name=${name}&field=${fieldSerial}`
+    });
+    this.setState({savePage: false});
+  }
+
+  serialField(field) {
+    return field.join('|');
+  }
+
+  deserialField(str) {
+    return str.split('|').map(inner => inner.split(',').map(el => +el));
+  }
+  loadGame(e) {
+    let targetField;
+    this.state.saves.forEach(el => {
+      if (el._id === e.target.id) {
+        targetField = this.deserialField(el.field);
+      }
+    });
+    console.log(targetField);
+    this.setState({field: targetField, loadPage: false});
+  }
+
   render() {
     return (
       <div className="App">
@@ -90,9 +147,13 @@ class App extends Component {
                 clearAll={this.clearAll.bind(this)}
                 nextStep={this.nextStep.bind(this)}
                 changeSpeed={this.changeSpeed.bind(this)}
-                generationNum={this.state.generationNum} />
-        <Field field={this.state.field} 
-               changeCell={this.changeCell.bind(this)} />
+                generationNum={this.state.generationNum}
+                showLoadPage={this.showLoadPage.bind(this)}
+                showSavePage={this.showSavePage.bind(this)} />
+        
+        {this.state.loadPage && <LoadPage saves={this.state.saves} loadGame={this.loadGame.bind(this)} />}
+        {this.state.savePage && <SavePage saveGame={this.saveGame.bind(this)} />}
+        {!this.state.loadPage && !this.state.savePage && <Field field={this.state.field} changeCell={this.changeCell.bind(this)} />}
       </div>
     );
   }
