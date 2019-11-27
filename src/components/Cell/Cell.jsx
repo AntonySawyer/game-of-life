@@ -2,8 +2,9 @@ import React from 'react';
 import './Cell.css';
 
 function Cell(props) {
+  const classForCell = props.val === 0 ? 'empty' : 'filled';
   return (
-    <div id={props.cellId} onClick={() => props.changeCell(props.cellId)}>{props.val }</div>
+    <div id={props.cellId} className={classForCell} onClick={() => props.changeCell(props.cellId)}></div>
   );
 }
 
