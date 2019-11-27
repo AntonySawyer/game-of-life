@@ -2,13 +2,14 @@ import React, { Component } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
 import Field from './components/Field';
+import checkNeibors from './utils/checkNeibors';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isStarted: false,
-      field: new Array(5).fill(new Array(5).fill(0))
+      field: new Array(10).fill(new Array(10).fill(0))
     };
   }
 
@@ -46,14 +47,21 @@ class App extends Component {
   }
 
   changeCell(cellId) {
-    const idArr = cellId.split('_');
-    const rowIndex = +idArr[0].substring(3);
-    const colIndex = +idArr[1].substring(3);
-     this.setState((prevState, props) => {
-      const targetRow = prevState.field[rowIndex].slice();
-      targetRow[colIndex] = targetRow[colIndex] === 0 ? 1 : 0;
-      prevState.field[rowIndex] = targetRow;
-      return prevState;})
+    if (!this.state.isStarted) {
+      const idArr = cellId.split('_');
+      const rowIndex = +idArr[0].substring(3);
+      const colIndex = +idArr[1].substring(3);
+      this.setState((prevState, props) => {
+        const targetRow = prevState.field[rowIndex].slice();
+        targetRow[colIndex] = targetRow[colIndex] === 0 ? 1 : 0;
+        prevState.field[rowIndex] = targetRow;
+        return prevState;
+      })
+    }
+  }
+
+  nextStep() {
+    this.setState({field: checkNeibors(this.state.field)});
   }
 
   render() {
@@ -63,7 +71,8 @@ class App extends Component {
                 setNewField={this.setNewField.bind(this)} 
                 playControl={this.playControl.bind(this)}
                 stopGame={this.stopGame.bind(this)}
-                clearAll={this.clearAll.bind(this)} />
+                clearAll={this.clearAll.bind(this)}
+                nextStep={this.nextStep.bind(this)} />
         <Field field={this.state.field} 
                changeCell={this.changeCell.bind(this)} />
       </div>
