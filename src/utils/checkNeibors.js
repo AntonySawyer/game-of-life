@@ -1,3 +1,5 @@
+// /////// 10000 10x10 - 2700-2900ms
+
 export default function checkNeibors(field) {
   const nextGeneration = field.slice();
   field.forEach((el, rowIndex) => {
@@ -16,6 +18,8 @@ export default function checkNeibors(field) {
   });
   return nextGeneration;
 }
+
+
 
 function getNeibors(rowIndex, colIndex, field) {
   const neibors = [];

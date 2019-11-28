@@ -17,7 +17,9 @@ class App extends Component {
       generationNum: 0,
       loadPage: false,
       savePage: false,
-      saves: ''
+      saves: '',
+      lastHistory: [[[0]],[[1]],[[2]]],
+      circleNum: 0
     };
     this.nextStep = this.nextStep.bind(this);
   }
@@ -58,7 +60,7 @@ class App extends Component {
   clearAll() {
     this.stopGame();
     this.setNewField();
-    this.setState({generationNum: 0});
+    this.setState({generationNum: 0, circleNum: 0});
   }
 
   changeCell(cellId) {
@@ -70,14 +72,27 @@ class App extends Component {
         const targetRow = prevState.field[rowIndex].slice();
         targetRow[colIndex] = targetRow[colIndex] === 0 ? 1 : 0;
         prevState.field[rowIndex] = targetRow;
+        prevState.circleNum = 0;
+        prevState.generationNum = 0;
         return prevState;
       })
     }
   }
 
   nextStep() {
+    if (this.state.circleNum === 0) {
+      if (this.checkCircle()) {
+        this.setState({circleNum:  this.state.generationNum-1});
+      }
+    }
     this.setState((prevState) => {
-      return {field: checkNeibors(this.state.field), generationNum: prevState.generationNum+1}
+      const newField = checkNeibors(this.state.field);
+      const newHistory = prevState.lastHistory;
+      newHistory.shift();
+      newHistory.push(newField);
+      return {field: newField, 
+              generationNum: prevState.generationNum+1,
+              lastHistory: newHistory}
     });
   }
 
@@ -137,6 +152,7 @@ class App extends Component {
   }
 
   forvard() {
+    console.time('forvard');
     const length = +document.getElementById('forvard').value;
     console.log(`forvard to ${length}`);
     let modifiedField = this.state.field.slice();
@@ -146,6 +162,21 @@ class App extends Component {
     this.setState((prevState) => {
       return {field: modifiedField, generationNum: prevState.generationNum + length}
     });
+    console.timeEnd('forvard');
+  }
+
+  checkCircle() {
+    const prevField = this.state.lastHistory[0].slice();
+    const nextField = this.state.lastHistory[2].slice();
+    const errors = [];
+    prevField.forEach((el, rowIndex) => {
+      el.forEach((cell, colIndex) => {
+        if (nextField[rowIndex][colIndex] !== cell) {
+          errors.push(1);
+        }
+      });
+    });
+    return errors.length === 0;
   }
 
   render() {
@@ -161,7 +192,8 @@ class App extends Component {
                 generationNum={this.state.generationNum}
                 showLoadPage={this.showLoadPage.bind(this)}
                 showSavePage={this.showSavePage.bind(this)}
-                forvard={this.forvard.bind(this)} />
+                forvard={this.forvard.bind(this)}
+                circleNum={this.state.circleNum} />
         
         {this.state.loadPage && <LoadPage saves={this.state.saves} loadGame={this.loadGame.bind(this)} />}
         {this.state.savePage && <SavePage saveGame={this.saveGame.bind(this)} />}

@@ -17,6 +17,7 @@ function Navbar(props) {
       <span>{`Generation №${props.generationNum}`}</span>
       <input type="button" value="Forvard >>" onClick={props.forvard} />
       <input type="number" id="forvard" defaultValue="10" />
+      {!!props.circleNum && <span>{`cycle in ${props.circleNum}`}</span>}
     </header>
   );
 }
