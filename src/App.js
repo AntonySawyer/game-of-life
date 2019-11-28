@@ -133,8 +133,19 @@ class App extends Component {
         targetField = this.deserialField(el.field);
       }
     });
-    console.log(targetField);
     this.setState({field: targetField, loadPage: false});
+  }
+
+  forvard() {
+    const length = +document.getElementById('forvard').value;
+    console.log(`forvard to ${length}`);
+    let modifiedField = this.state.field.slice();
+    for (let i = 0; i < length; i++) {
+      modifiedField = checkNeibors(modifiedField).slice();
+    }
+    this.setState((prevState) => {
+      return {field: modifiedField, generationNum: prevState.generationNum + length}
+    });
   }
 
   render() {
@@ -149,7 +160,8 @@ class App extends Component {
                 changeSpeed={this.changeSpeed.bind(this)}
                 generationNum={this.state.generationNum}
                 showLoadPage={this.showLoadPage.bind(this)}
-                showSavePage={this.showSavePage.bind(this)} />
+                showSavePage={this.showSavePage.bind(this)}
+                forvard={this.forvard.bind(this)} />
         
         {this.state.loadPage && <LoadPage saves={this.state.saves} loadGame={this.loadGame.bind(this)} />}
         {this.state.savePage && <SavePage saveGame={this.saveGame.bind(this)} />}

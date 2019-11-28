@@ -14,7 +14,9 @@ function Navbar(props) {
       <input type="button" value="load" onClick={props.showLoadPage} />
       <input type="number" id="interval" defaultValue="500" step="50" min="50" 
               onChange={props.changeSpeed} />
-      <span>{`${props.generationNum} generations`}</span>
+      <span>{`Generation №${props.generationNum}`}</span>
+      <input type="button" value="Forvard >>" onClick={props.forvard} />
+      <input type="number" id="forvard" defaultValue="10" />
     </header>
   );
 }
