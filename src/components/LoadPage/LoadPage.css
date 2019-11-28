@@ -1,0 +1,21 @@
+.listWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+ul {
+  width: 450px;
+}
+
+li {
+  list-style: none;
+  display: block;
+  height: 30px;
+  border-bottom: 1px solid #329c36;
+  line-height: 2;
+}
+
+li:hover {
+  cursor: pointer;
+  background-color: #4CAF50;
+}
