@@ -81,41 +81,41 @@ class App extends Component {
   }
 
   nextStep(mode = 'next', field = this.state.field) {
-      const memoizedCheckNeibors = (n) => {
-  let result;
-  const key = n.join('');
-  (() => {
-    if (key in this.state.cache) {
-      // console.log('Fetching from cache');
-      result = this.state.cache[key];
-      if (this.state.period === 0) {
-        this.setState({period: Object.keys(this.state.cache).length})
+    const tempCache = this.state.cache;
+    let period = this.state.period;
+    const memoizedCheckNeibors = (n) => {
+    let result;
+    const key = n.join('');
+    (() => {
+      if (key in tempCache) {
+        if (period === 0) {
+          period = Object.keys(this.state.cache).length;
+          this.setState({period})
+        }
+        result = tempCache[key];
       }
-    }
-    else {
-      // console.log('Calculating result');
-      let nextGeneration = checkNeibors(field);
-      this.setState((prevState) => {
-        prevState.cache[key] = nextGeneration;
-        return {cache: prevState.cache}
-      })
-      result = nextGeneration;
-      // console.log(result);
-    }
-  })();
-  // console.log(`caching ${caching} times`);
-  return result;
-}
+      else {
+        let nextGeneration = checkNeibors(field);
+        tempCache[key] = nextGeneration;
+        this.setState((prevState) => {
+          prevState.cache[key] = nextGeneration;
+          return {cache: prevState.cache}
+        })
+        result = nextGeneration;
+      }
+    })();
+    return result;
+  }
       const newField = memoizedCheckNeibors(field);
 
-  if (mode !== 'forward') {
-        this.setState((prevState) => {
-      return {field: newField, 
-              generationNum: prevState.generationNum + 1}
-    });
-  } else {
-    return newField;
-  }
+    if (mode !== 'forward') {
+          this.setState((prevState) => {
+        return {field: newField, 
+                generationNum: prevState.generationNum + 1}
+      });
+    } else {
+      return [newField, period];
+    }
   }
 
   changeSpeed(e) {
@@ -190,12 +190,27 @@ class App extends Component {
       length = length % this.state.period;
     }
     let modifiedField;
-    for (let i = 0; i < length; i++) {
-      modifiedField = this.nextStep('forward', modifiedField);
+    if (length !== 0) {
+      for (let i = 0; i < length; i++) {
+        const next = this.nextStep('forward', modifiedField);
+        modifiedField = next[0];
+        if (next[1] !== 0 && next[1] !== this.state.period) {
+          const newlength = length % next[1];
+          for (let j = 0; j < newlength; j++) {
+            const next2 = this.nextStep('forward', modifiedField);
+            modifiedField = next2[0];
+          }
+          break;
+        }
+      }
+      this.setState((prevState) => {
+        return {field: modifiedField, generationNum: prevState.generationNum + prevState.forwardLength, forwardLength: 0 }
+      });
+    } else if (length === 0) {
+      this.setState((prevState) => {
+        return {generationNum: prevState.generationNum + prevState.forwardLength, forwardLength: 0 }
+      });
     }
-    this.setState((prevState) => {
-      return {field: modifiedField, generationNum: prevState.generationNum + prevState.forwardLength, forwardLength: 0 }
-    });
     console.timeEnd('forward');
   }
 
