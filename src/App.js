@@ -19,7 +19,8 @@ class App extends Component {
       savePage: false,
       saves: '',
       period: 0,
-      cache: {}
+      cache: {},
+      forwardLength: 0
     };
     this.nextStep = this.nextStep.bind(this);
   }
@@ -181,6 +182,9 @@ class App extends Component {
   forward() {
     console.time('forward');
     let length = +document.getElementById('forward').value;
+    if (this.state.forwardLength === 0) {
+      this.setState({forwardLength: length})
+    }
     console.log(`forward to ${length}`);
     if (this.state.period !== 0) {
       length = length % this.state.period;
@@ -190,7 +194,7 @@ class App extends Component {
       modifiedField = this.nextStep('forward', modifiedField);
     }
     this.setState((prevState) => {
-      return {field: modifiedField, generationNum: prevState.generationNum + length}
+      return {field: modifiedField, generationNum: prevState.generationNum + prevState.forwardLength, forwardLength: 0 }
     });
     console.timeEnd('forward');
   }
