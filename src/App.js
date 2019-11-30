@@ -13,13 +13,13 @@ class App extends Component {
       isStarted: false,
       field: new Array(10).fill(new Array(10).fill(0)),
       game: '',
-      interval: 500,
+      interval: 5,
       generationNum: 0,
       loadPage: false,
       savePage: false,
       saves: '',
-      lastHistory: [[[0]],[[1]],[[2]]],
-      circleNum: 0
+      period: 0,
+      cache: {}
     };
     this.nextStep = this.nextStep.bind(this);
   }
@@ -60,7 +60,7 @@ class App extends Component {
   clearAll() {
     this.stopGame();
     this.setNewField();
-    this.setState({generationNum: 0, circleNum: 0});
+    this.setState({generationNum: 0, period: 0, cache: {}});
   }
 
   changeCell(cellId) {
@@ -72,28 +72,49 @@ class App extends Component {
         const targetRow = prevState.field[rowIndex].slice();
         targetRow[colIndex] = targetRow[colIndex] === 0 ? 1 : 0;
         prevState.field[rowIndex] = targetRow;
-        prevState.circleNum = 0;
+        prevState.period = 0;
         prevState.generationNum = 0;
         return prevState;
       })
     }
   }
 
-  nextStep() {
-    if (this.state.circleNum === 0) {
-      if (this.checkCircle()) {
-        this.setState({circleNum:  this.state.generationNum-1});
+  nextStep(mode = 'next', field = this.state.field) {
+      const memoizedCheckNeibors = (n) => {
+  let result;
+  const key = n.join('');
+  (() => {
+    if (key in this.state.cache) {
+      // console.log('Fetching from cache');
+      result = this.state.cache[key];
+      if (this.state.period === 0) {
+        this.setState({period: Object.keys(this.state.cache).length})
       }
     }
-    this.setState((prevState) => {
-      const newField = checkNeibors(this.state.field);
-      const newHistory = prevState.lastHistory;
-      newHistory.shift();
-      newHistory.push(newField);
+    else {
+      // console.log('Calculating result');
+      let nextGeneration = checkNeibors(field);
+      this.setState((prevState) => {
+        prevState.cache[key] = nextGeneration;
+        return {cache: prevState.cache}
+      })
+      result = nextGeneration;
+      // console.log(result);
+    }
+  })();
+  // console.log(`caching ${caching} times`);
+  return result;
+}
+      const newField = memoizedCheckNeibors(field);
+
+  if (mode !== 'forward') {
+        this.setState((prevState) => {
       return {field: newField, 
-              generationNum: prevState.generationNum+1,
-              lastHistory: newHistory}
+              generationNum: prevState.generationNum + 1}
     });
+  } else {
+    return newField;
+  }
   }
 
   changeSpeed(e) {
@@ -151,32 +172,20 @@ class App extends Component {
     this.setState({field: targetField, loadPage: false});
   }
 
-  forvard() {
-    console.time('forvard');
-    const length = +document.getElementById('forvard').value;
-    console.log(`forvard to ${length}`);
-    let modifiedField = this.state.field.slice();
+  forward() {
+    console.time('forward');
+    const length = +document.getElementById('forward').value;
+    console.log(`forward to ${length}`);
+    // let modifiedField = this.state.field.slice();
+    let modifiedField;
     for (let i = 0; i < length; i++) {
-      modifiedField = checkNeibors(modifiedField).slice();
+      // modifiedField = checkNeibors(modifiedField).slice();
+      modifiedField = this.nextStep('forward', modifiedField);
     }
     this.setState((prevState) => {
       return {field: modifiedField, generationNum: prevState.generationNum + length}
     });
-    console.timeEnd('forvard');
-  }
-
-  checkCircle() {
-    const prevField = this.state.lastHistory[0].slice();
-    const nextField = this.state.lastHistory[2].slice();
-    const errors = [];
-    prevField.forEach((el, rowIndex) => {
-      el.forEach((cell, colIndex) => {
-        if (nextField[rowIndex][colIndex] !== cell) {
-          errors.push(1);
-        }
-      });
-    });
-    return errors.length === 0;
+    console.timeEnd('forward');
   }
 
   render() {
@@ -192,8 +201,8 @@ class App extends Component {
                 generationNum={this.state.generationNum}
                 showLoadPage={this.showLoadPage.bind(this)}
                 showSavePage={this.showSavePage.bind(this)}
-                forvard={this.forvard.bind(this)}
-                circleNum={this.state.circleNum} />
+                forward={this.forward.bind(this)}
+                period={this.state.period} />
         
         {this.state.loadPage && <LoadPage saves={this.state.saves} loadGame={this.loadGame.bind(this)} />}
         {this.state.savePage && <SavePage saveGame={this.saveGame.bind(this)} />}

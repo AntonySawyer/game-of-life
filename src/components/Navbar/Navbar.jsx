@@ -15,9 +15,9 @@ function Navbar(props) {
       <input type="number" id="interval" defaultValue="500" step="50" min="50" 
               onChange={props.changeSpeed} />
       <span>{`Generation №${props.generationNum}`}</span>
-      <input type="button" value="Forvard >>" onClick={props.forvard} />
-      <input type="number" id="forvard" defaultValue="10" />
-      {!!props.circleNum && <span>{`cycle in ${props.circleNum}`}</span>}
+      <input type="button" value="Forward >>" onClick={props.forward} />
+      <input type="number" id="forward" defaultValue="10" />
+      {!!props.period && <span>{`Cycle period = ${props.period}`}</span>}
     </header>
   );
 }
