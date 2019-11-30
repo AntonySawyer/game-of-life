@@ -169,17 +169,24 @@ class App extends Component {
         targetField = this.deserialField(el.field);
       }
     });
+    this.changeInputs(targetField.length, targetField[0].length);
     this.setState({field: targetField, loadPage: false});
+  }
+
+  changeInputs(width, height) {
+    document.getElementById('fieldWidth').value = width;
+    document.getElementById('fieldHeigth').value = height;    
   }
 
   forward() {
     console.time('forward');
-    const length = +document.getElementById('forward').value;
+    let length = +document.getElementById('forward').value;
     console.log(`forward to ${length}`);
-    // let modifiedField = this.state.field.slice();
+    if (this.state.period !== 0) {
+      length = length % this.state.period;
+    }
     let modifiedField;
     for (let i = 0; i < length; i++) {
-      // modifiedField = checkNeibors(modifiedField).slice();
       modifiedField = this.nextStep('forward', modifiedField);
     }
     this.setState((prevState) => {
