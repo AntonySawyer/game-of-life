@@ -1,41 +1,53 @@
-// /////// 10000 10x10 - 2700-2900ms
-
-export default function checkNeibors(field) {
+export default function checkNeibors(field, subFieldCache) {
   const nextGeneration = field.slice();
-  field.forEach((el, rowIndex) => {
-    const targetRow = el.slice();
-    el.forEach((cell, colIndex) => {
-      const neibors = getNeibors(rowIndex, colIndex, field);
-      if (neibors.length < 2 || neibors.length > 3) {
-        targetRow[colIndex] = 0;
-      } else if (neibors.length === 3) {
-        targetRow[colIndex] = 1;
-      } else {
-        targetRow[colIndex] = cell;
-      }
-    })
-    nextGeneration[rowIndex] = targetRow;
+  const lastRowIndex = field.length-1;
+  let newCache;
+
+  field.forEach((row, rowIndex, field) => {
+    let firstRow = rowIndex === 0 ? field[lastRowIndex] : field[rowIndex-1];
+    let thirdRow = rowIndex === lastRowIndex ? field[0] : field[rowIndex+1];
+    const next = getNewRow([firstRow, row, thirdRow], subFieldCache);
+    nextGeneration[rowIndex] = next[0];
+    newCache = next[1];
   });
-  return nextGeneration;
+
+  return [nextGeneration, newCache];
 }
 
+function getNewRow(subField, subFieldCache) {
+  const newCache = subFieldCache;
+  const key = subField.join('');
+  const newRow = [];
+  if (key in newCache) {
+    return [newCache[key], newCache];
+  } else {
+    subField[1].forEach((cell, cellIndex) => {
+      const neiborsCount = getNeibors(cell, cellIndex, subField);
+      newRow.push(resolver(neiborsCount, cell));
+      newCache[key] = newRow;
+  });
+  }
+  return [newRow, newCache];
+}
 
-
-function getNeibors(rowIndex, colIndex, field) {
+function getNeibors(cell, cellIndex, subField) {
   const neibors = [];
-  const rightBorder = field[0].length - 1;
-  const bottomBorder = field.length - 1;
-  const top = rowIndex === 0 ? bottomBorder : rowIndex - 1;
-  const bottom = rowIndex === bottomBorder ? 0 : rowIndex + 1;
-  const left = colIndex === 0 ? rightBorder : colIndex - 1;
-  const right = colIndex === rightBorder ? 0 : colIndex + 1;
+  const left = cellIndex === 0 ? subField[0].length-1 : cellIndex - 1;
+  const right = cellIndex === subField[0].length-1 ? 0 : cellIndex + 1;
  
-  const topLine = field[top];
-  const middleLine = field[rowIndex];
-  const bottomLine = field[bottom];
-  neibors.push(topLine[left], topLine[colIndex], topLine[right],
-              middleLine[left], middleLine[right], 
-              bottomLine[left], bottomLine[colIndex], bottomLine[right]);
+  neibors.push(subField[0][left], subField[0][cellIndex], subField[0][right],
+              subField[1][left], subField[1][right], 
+              subField[2][left], subField[2][cellIndex], subField[2][right]);
 
-  return neibors.filter(el => !!el);
+  return neibors.filter(el => !!el).length;
+}
+
+function resolver(neiborsCount, cell) {
+  if (neiborsCount < 2 || neiborsCount > 3) {
+    return 0;
+  } else if (neiborsCount === 3) {
+    return 1;
+  } else {
+    return cell;
+  }
 }

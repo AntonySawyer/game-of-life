@@ -20,7 +20,8 @@ class App extends Component {
       saves: '',
       period: 0,
       cache: {},
-      forwardLength: 0
+      forwardLength: 0,
+      subFieldCache: {}
     };
     this.nextStep = this.nextStep.bind(this);
   }
@@ -95,11 +96,13 @@ class App extends Component {
         result = tempCache[key];
       }
       else {
-        let nextGeneration = checkNeibors(field);
+        const next = checkNeibors(field, this.state.subFieldCache);
+        let nextGeneration = next[0];
+        const newSubFieldCache = next[1];
         tempCache[key] = nextGeneration;
         this.setState((prevState) => {
           prevState.cache[key] = nextGeneration;
-          return {cache: prevState.cache}
+          return {cache: prevState.cache, subFieldCache: newSubFieldCache}
         })
         result = nextGeneration;
       }
